@@ -1,6 +1,6 @@
 // Токен бота и ID чата менеджера
 const TELEGRAM_BOT_TOKEN = '8553491781:AAEfADkl8ssgDZcqb7tW2T9ww7FCq7nNLVk';
-const TELEGRAM_CHAT_ID = '-5361849709';
+const TELEGRAM_CHAT_ID = '-1004414245980';
 
 export interface BookingData {
   bookingId: string;
