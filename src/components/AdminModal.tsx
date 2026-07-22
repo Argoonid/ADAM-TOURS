@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import {
-  X, Lock, KeyRound, LayoutDashboard, Compass, ClipboardList,
-  Megaphone, Save, Users, CheckCircle2, MessageCircle, LogOut, ArrowLeft,
-  Trash2, DollarSign, Clock, CreditCard, Camera, Bus
+import { 
+  X, Lock, KeyRound, Compass, ClipboardList,
+  Megaphone, Save, CheckCircle2, LogOut, ArrowLeft,
+  Trash2, Camera
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getLocalizedText } from '../data/tours';
