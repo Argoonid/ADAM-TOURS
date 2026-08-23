@@ -25,7 +25,7 @@
   "about": {
     "badge": "Chi Siamo",
     "title": "La Tua Guida Affidabile a Sharm el-Sheikh",
-    "desc": "Elina Tours organizza gite in barca, safari e tour storici dal 2015. Il nostro obiettivo è offrire un servizio eccellente senza rischi.",
+    "desc": "SHARM Tours organizza gite in barca, safari e tour storici dal 2015. Il nostro obiettivo è offrire un servizio eccellente senza rischi.",
     "feature1_title": "Guide Con Licenza",
     "feature1_desc": "Tutti i tour sono condotti da guide turistiche multilingue con licenza ufficiale.",
     "feature2_title": "0% Anticipo",
@@ -50,7 +50,7 @@
     "feature3": "Assistenza 24/7"
   },
   "advantages": {
-    "title": "Perché i Viaggiatori Scelgono ELINA TOURS",
+    "title": "Perché i Viaggiatori Scelgono SHARM TOURS",
     "subtitle": "Ci prendiamo cura del tuo comfort e della tua sicurezza in ogni momento della vacanza",
     "item1_title": "Pagamento sul Posto",
     "item1_desc": "Nessun rischio o anticipo richiesto. Paga direttamente alla guida o all'autista al momento della partenza.",
@@ -82,7 +82,7 @@
     "timer_label": "Blocco Scade In:"
   },
   "chat": {
-    "assistant_title": "Assistente Elina Tours",
+    "assistant_title": "Assistente SHARM Tours",
     "online_status": "Online 24/7",
     "greeting_title": "👋 Ciao!",
     "greeting_desc": "Clicca su una domanda qui sotto o passa alla chat live di WhatsApp.",
@@ -190,7 +190,7 @@
     "cash_to_guide": "🟡 Contanti alla guida",
     "scan_for_guide": "SCAN PER LA GUIDA",
     "security_note": "Si prega di farsi trovare al Security Gate dell'hotel 10 minuti prima dell'orario.",
-    "footer": "Elina Tours Egypt • Sharm El Sheikh • Supporto WhatsApp 24/7"
+    "footer": "SHARM Tours Egypt • Sharm El Sheikh • Supporto WhatsApp 24/7"
   },
   "payment": {
     "hub_subtitle": "Egypt Hub",
@@ -210,7 +210,7 @@
     "card_sbp_number": "Numero di Carta / Conto:",
     "bank_label": "Banca:",
     "recipient_label": "Beneficiario:",
-    "recipient_name": "Elina T. (Guida Ufficiale)",
+    "recipient_name": "Sharm T. (Guida Ufficiale)",
     "transferred_btn": "Ho Trasferito ${{amount}}",
     "3ds_title": "Verifica 3D Secure",
     "3ds_desc": "Abbiamo inviato un codice SMS monouso al tuo numero di cellulare.",

@@ -51,7 +51,7 @@ export const ChatWidget: React.FC = () => {
               </div>
               <div>
                 <h4 className="font-extrabold text-sm">
-                  {t('chat.assistant_title', 'Помощник Elina Tours')}
+                  {t('chat.assistant_title', 'Помощник SHARM Tours')}
                 </h4>
                 <span className="text-[10px] text-emerald-400 flex items-center gap-1 font-semibold">
                   <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping" /> 

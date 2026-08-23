@@ -25,7 +25,7 @@
   "about": {
     "badge": "About Company",
     "title": "Your Trusted Guide in Sharm El Sheikh",
-    "desc": "Elina Tours organizes boat trips, desert safaris, and historical tours since 2015. Our main goal is high-quality service with zero risk.",
+    "desc": "SHARM Tours organizes boat trips, desert safaris, and historical tours since 2015. Our main goal is high-quality service with zero risk.",
     "feature1_title": "Licensed Guides",
     "feature1_desc": "All tours are conducted by professional licensed multilingual guides.",
     "feature2_title": "0% Prepayment",
@@ -50,7 +50,7 @@
     "feature3": "24/7 Support"
   },
   "advantages": {
-    "title": "Why Travelers Choose ELINA TOURS",
+    "title": "Why Travelers Choose SHARM TOURS",
     "subtitle": "Caring for your comfort and safety at every step of your trip",
     "item1_title": "Pay on the Spot",
     "item1_desc": "No risk or prepayment required. Pay your guide or driver directly upon bus boarding.",
@@ -82,7 +82,7 @@
     "timer_label": "Hold Expires In:"
   },
   "chat": {
-    "assistant_title": "Elina Tours Assistant",
+    "assistant_title": "SHARM Tours Assistant",
     "online_status": "Online 24/7",
     "greeting_title": "👋 Hello!",
     "greeting_desc": "Click on a question below or switch to live WhatsApp chat.",
@@ -190,7 +190,7 @@
     "cash_to_guide": "🟡 Cash to guide",
     "scan_for_guide": "SCAN FOR GUIDE",
     "security_note": "Please be at hotel Security Gate 10 minutes prior to pickup time.",
-    "footer": "Elina Tours Egypt • Sharm El Sheikh • 24/7 WhatsApp Support"
+    "footer": "SHARM Tours Egypt • Sharm El Sheikh • 24/7 WhatsApp Support"
   },
   "payment": {
     "hub_subtitle": "Egypt Hub",
@@ -210,7 +210,7 @@
     "card_sbp_number": "Card / Account Number:",
     "bank_label": "Bank:",
     "recipient_label": "Recipient:",
-    "recipient_name": "Elina T. (Official Guide)",
+    "recipient_name": "Sharm T. (Official Guide)",
     "transferred_btn": "I Transferred ${{amount}}",
     "3ds_title": "3D Secure Verification",
     "3ds_desc": "We sent a one-time SMS verification code to your mobile phone.",

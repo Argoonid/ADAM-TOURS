@@ -123,7 +123,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 E
               </div>
               <span className="font-extrabold text-sm tracking-wider uppercase text-amber-400">
-                Elina Pay <span className="text-xs text-slate-400">{t('payment.hub_subtitle', 'Egypt Hub')}</span>
+                SHARM Pay <span className="text-xs text-slate-400">{t('payment.hub_subtitle', 'Egypt Hub')}</span>
               </span>
             </div>
             <span className="bg-emerald-500/20 text-emerald-300 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1">
@@ -269,7 +269,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
                   <div className="flex justify-between items-center pt-2 border-t border-slate-200">
                     <span className="text-slate-400">{t('payment.recipient_label', 'Получатель:')}</span>
-                    <span className="font-bold text-slate-900">{t('payment.recipient_name', 'Elina T. (Официальный гид)')}</span>
+                    <span className="font-bold text-slate-900">{t('payment.recipient_name', 'SHARM T. (Официальный гид)')}</span>
                   </div>
                 </div>
 
