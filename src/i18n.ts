@@ -7,7 +7,7 @@ import en from './locales/en.json';
 import it from './locales/it.json';
 
 i18n
-  .use(LanguageDetector) // Автоматически определяет язык браузера туриста!
+  .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources: {
@@ -15,9 +15,13 @@ i18n
       en: { translation: en },
       it: { translation: it },
     },
-    fallbackLng: 'ru', // Язык по умолчанию, если перевод не найден
+    fallbackLng: 'ru',
+    lng: 'ru',
     interpolation: {
-      escapeValue: false, // React сам защищает от XSS
+      escapeValue: false,
+    },
+    react: {
+      useSuspense: false, // Отключает блокировку рендера в React 19
     },
   });
 
