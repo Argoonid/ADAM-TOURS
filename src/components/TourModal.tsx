@@ -4,12 +4,14 @@ import { ru } from 'date-fns/locale/ru';
 import { enUS } from 'date-fns/locale/en-US';
 import { it } from 'date-fns/locale/it';
 import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import 'react-datepicker/dist/react-datepicker.css';
 
 import { 
   X, Calendar, Check, AlertCircle, Plus, Minus, 
   CalendarPlus, CheckCircle2, User, Phone, Mail, Building2,
-  Globe2, MessageCircle, FileText, Send, Loader2, Ticket, Banknote, Sparkles, Clock, AlertTriangle, PhoneCall
+  Globe2, MessageCircle, FileText, Send, Loader2, Ticket, Banknote, Sparkles, Clock, AlertTriangle, PhoneCall,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { getLocalizedText } from '../data/tours';
 import type { Tour } from '../data/tours';
@@ -57,7 +59,6 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language;
 
-  // Локализация текстов
   const title = getLocalizedText(tour.title, currentLang);
   const categoryLabel = getLocalizedText(tour.categoryLabel, currentLang);
   const location = getLocalizedText(tour.location, currentLang);
@@ -65,7 +66,13 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
   const schedule = getLocalizedText(tour.schedule, currentLang);
   const overview = getLocalizedText(tour.overview, currentLang);
 
-  // Параметры расписания
+  const images = tour.images && tour.images.length > 0
+    ? tour.images
+    : ['https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&q=80&w=1000'];
+
+  const [activePhotoIdx, setActivePhotoIdx] = useState(0);
+
+  // Параметры расписания и рейсов
   const availableDays = tour.daysOfWeek && tour.daysOfWeek.length > 0 ? tour.daysOfWeek : [0, 1, 2, 3, 4, 5, 6];
   const timeSlots = tour.timeSlots && tour.timeSlots.length > 0 
     ? tour.timeSlots 
@@ -82,7 +89,7 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
   };
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(getNextValidDate);
-  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>(timeSlots[0]);
+  const [selectedTimeSlot, setSelectedTimeSlot] = useState<string>(timeSlots[0] || '08:00');
   const [remainingSeats, setRemainingSeats] = useState<number>(maxCapacity);
   const [isCheckingSeats, setIsCheckingSeats] = useState<boolean>(false);
 
@@ -95,7 +102,6 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
   const [preferredLang, setPreferredLang] = useState('Русский');
   const [contactMethod, setContactMethod] = useState<'WhatsApp' | 'Telegram' | 'Звонок' | string>('WhatsApp');
   
-  // Обязательные поля формы
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -126,16 +132,22 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
     ? selectedDate.toLocaleDateString(currentLang === 'ru' ? 'ru-RU' : currentLang === 'it' ? 'it-IT' : 'en-US', { day: '2-digit', month: 'long', year: 'numeric' })
     : 'Дата не выбрана';
 
-  // Проверка свободных мест на рейс
+  // Проверка слотов при смене даты или времени рейса
   useEffect(() => {
     if (!selectedDate) return;
+    let isMounted = true;
+
     const fetchRemainingSeats = async () => {
       setIsCheckingSeats(true);
       const seats = await tourService.getSeatsForSlot(tour.id, formattedDateStr, selectedTimeSlot, maxCapacity);
-      setRemainingSeats(seats);
-      setIsCheckingSeats(false);
+      if (isMounted) {
+        setRemainingSeats(seats);
+        setIsCheckingSeats(false);
+      }
     };
+
     fetchRemainingSeats();
+    return () => { isMounted = false; };
   }, [tour.id, formattedDateStr, selectedTimeSlot, maxCapacity]);
 
   useEffect(() => {
@@ -164,19 +176,6 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
     setSelectedOptions(prev => prev.includes(optKey) ? prev.filter(i => i !== optKey) : [...prev, optKey]);
   };
 
-  const handleAdultAgeChange = (index: number, val: number) => {
-    const updated = [...adultAges];
-    updated[index] = val;
-    setAdultAges(updated);
-  };
-
-  const handleChildAgeChange = (index: number, val: number) => {
-    const updated = [...childAges];
-    updated[index] = val;
-    setChildAges(updated);
-  };
-
-  // Валидация
   const validateForm = () => {
     const newErrors: { name?: string; phone?: string; email?: string } = {};
 
@@ -198,7 +197,6 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
     return Object.keys(newErrors).length === 0;
   };
 
-  // Бронирование
   const handleSubmitBooking = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -242,10 +240,9 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
     };
 
     setCurrentVoucher(voucherPayload);
-
     const newSeatsForThisSlot = Math.max(0, remainingSeats - totalGuests);
 
-    // 1. Сохранение в Supabase (с contact_method и status unconfirmed)
+    // 1. Запись в Supabase с фиксацией слота и ID тура
     try {
       await supabase
         .from('orders')
@@ -257,6 +254,7 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
           phone: phone,
           hotel: hotel || 'Не указан',
           tour_date: formattedDateStr,
+          departure_time: selectedTimeSlot,
           guests: guestsFormatted,
           total_price: totalPrice,
           status: 'unconfirmed',
@@ -266,10 +264,11 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
       console.warn('Supabase order insert fallback:', err);
     }
 
-    // 2. Локальное сохранение
+    // 2. Локальное сохранение (LocalStorage) для автономного сканера и манифеста
     try {
       const newOrder = {
         ...voucherPayload,
+        tourId: tour.id,
         email,
         contactMethod,
         qrUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${generatedId}`,
@@ -289,7 +288,7 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
       console.error('LocalStorage sync error:', err);
     }
 
-    // 3. Отправка графического ваучера в Telegram
+    // 3. Отправка в Telegram
     try {
       await sendBookingToTelegram({
         bookingId: generatedId,
@@ -313,7 +312,7 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
       });
       setIsSuccess(true);
     } catch (err) {
-      console.error('Telegram error:', err);
+      console.error('Telegram dispatch fallback:', err);
       setIsSuccess(true);
     } finally {
       setIsSubmitting(false);
@@ -328,8 +327,12 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
     const day = String(selectedDate.getDate()).padStart(2, '0');
     const cleanDate = `${year}${month}${day}`;
 
-    const startTime = `${cleanDate}T080000Z`;
-    const endTime = `${cleanDate}T130000Z`;
+    const cleanTime = (selectedTimeSlot || '08:00').replace(/[^0-9]/g, '').padEnd(4, '0').slice(0, 4);
+    const startHour = parseInt(cleanTime.slice(0, 2), 10) || 8;
+    const endHour = (startHour + 5) % 24;
+
+    const dtStart = `${cleanDate}T${String(startHour).padStart(2, '0')}0000Z`;
+    const dtEnd = `${cleanDate}T${String(endHour).padStart(2, '0')}0000Z`;
 
     const icsContent = [
       'BEGIN:VCALENDAR',
@@ -339,10 +342,10 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
       'METHOD:PUBLISH',
       'BEGIN:VEVENT',
       `SUMMARY:${title} (#${bookingId})`,
-      `DESCRIPTION:Отель: ${hotel || 'Не указан'}.\\nГости: ${adults} взр, ${childrenCount} дет.\\nВремя: ${selectedTimeSlot}.\\nК оплате гиду: $${totalPrice}.`,
+      `DESCRIPTION:Отель: ${hotel || 'Не указан'}.\\nГости: ${adults} взр, ${childrenCount} дет.\\nВремя выезда: ${selectedTimeSlot}.\\nК оплате гиду: $${totalPrice}.`,
       `LOCATION:${location}`,
-      `DTSTART:${startTime}`,
-      `DTEND:${endTime}`,
+      `DTSTART:${dtStart}`,
+      `DTEND:${dtEnd}`,
       'STATUS:CONFIRMED',
       'END:VEVENT',
       'END:VCALENDAR',
@@ -360,12 +363,12 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md overflow-y-auto">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md overflow-y-auto font-sans">
         <div className="bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden my-auto max-h-[92vh] flex flex-col relative border border-slate-100">
           
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 w-10 h-10 bg-slate-900/60 hover:bg-slate-900 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all cursor-pointer shadow-lg"
+            className="absolute top-4 right-4 z-30 w-10 h-10 bg-slate-900/60 hover:bg-slate-900 text-white rounded-full flex items-center justify-center backdrop-blur-md transition-all cursor-pointer shadow-lg"
           >
             <X className="w-5 h-5" />
           </button>
@@ -374,38 +377,90 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
             <form onSubmit={handleSubmitBooking} noValidate className="flex flex-col h-full overflow-hidden">
               <div className="overflow-y-auto p-5 sm:p-8 space-y-6">
                 
-                {/* Баннер */}
-                <div className="relative h-56 sm:h-72 -mx-5 sm:-mx-8 -mt-5 sm:-mt-8 mb-4 overflow-hidden">
-                  <img
-                    src={tour.images[0]}
-                    alt={title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#07111e] via-[#07111e]/40 to-transparent flex flex-col justify-end p-6">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[#f5d77f] font-bold text-xs tracking-wider uppercase flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" /> {categoryLabel}
-                      </span>
-                      <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
-                        remainingSeats > 5 
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' 
-                          : remainingSeats > 0
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                          : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                      }`}>
-                        {remainingSeats > 0 ? `Свободно на рейс: ${remainingSeats}` : 'Все места заняты'}
-                      </span>
-                    </div>
+                {/* Галерея-шапка */}
+                <div className="relative -mx-5 sm:-mx-8 -mt-5 sm:-mt-8 mb-4 overflow-hidden bg-slate-950">
+                  <div className="relative h-64 sm:h-80 select-none">
+                    <AnimatePresence initial={false} mode="wait">
+                      <motion.img
+                        key={activePhotoIdx}
+                        src={images[activePhotoIdx]}
+                        alt={`${title} - view ${activePhotoIdx + 1}`}
+                        initial={{ opacity: 0.3 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0.2 }}
+                        transition={{ duration: 0.3 }}
+                        className="w-full h-full object-cover"
+                      />
+                    </AnimatePresence>
 
-                    <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-2">
-                      {title}
-                    </h2>
-                    <div className="flex flex-wrap gap-4 text-xs font-semibold text-slate-200">
-                      <span>⏱ {duration}</span>
-                      <span>📍 {location}</span>
-                      <span>🗓 {schedule}</span>
+                    {images.length > 1 && (
+                      <div className="absolute inset-x-3 top-1/2 -translate-y-1/2 flex items-center justify-between z-20">
+                        <button
+                          type="button"
+                          onClick={() => setActivePhotoIdx(prev => prev === 0 ? images.length - 1 : prev - 1)}
+                          className="w-10 h-10 rounded-full bg-slate-950/60 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md transition-transform active:scale-90"
+                        >
+                          <ChevronLeft className="w-5 h-5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setActivePhotoIdx(prev => prev === images.length - 1 ? 0 : prev + 1)}
+                          className="w-10 h-10 rounded-full bg-slate-950/60 hover:bg-slate-950 text-white flex items-center justify-center backdrop-blur-md transition-transform active:scale-90"
+                        >
+                          <ChevronRight className="w-5 h-5" />
+                        </button>
+                      </div>
+                    )}
+
+                    {images.length > 1 && (
+                      <div className="absolute top-4 left-4 z-20 bg-black/60 backdrop-blur-md text-white font-mono text-[11px] font-bold px-3 py-1 rounded-full border border-white/10">
+                        {activePhotoIdx + 1} / {images.length}
+                      </div>
+                    )}
+
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#07111e] via-[#07111e]/40 to-transparent flex flex-col justify-end p-6 z-10 pointer-events-none">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[#f5d77f] font-bold text-xs tracking-wider uppercase flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" /> {categoryLabel}
+                        </span>
+                        <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
+                          remainingSeats > 5 
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' 
+                            : remainingSeats > 0
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                            : 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
+                        }`}>
+                          {remainingSeats > 0 ? `Свободно на рейс: ${remainingSeats}` : 'Все места заняты'}
+                        </span>
+                      </div>
+
+                      <h2 className="text-2xl sm:text-3xl font-black text-white leading-tight mb-2">
+                        {title}
+                      </h2>
+                      <div className="flex flex-wrap gap-4 text-xs font-semibold text-slate-200">
+                        <span>⏱ {duration}</span>
+                        <span>📍 {location}</span>
+                        <span>🗓 {schedule}</span>
+                      </div>
                     </div>
                   </div>
+
+                  {images.length > 1 && (
+                    <div className="flex gap-2 p-3 bg-[#040b14] overflow-x-auto border-t border-white/5">
+                      {images.map((imgUrl, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setActivePhotoIdx(i)}
+                          className={`relative shrink-0 w-16 h-12 rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
+                            activePhotoIdx === i ? 'border-[#d4af37] scale-95 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
+                          }`}
+                        >
+                          <img src={imgUrl} alt="" className="w-full h-full object-cover" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Описание */}
@@ -451,7 +506,7 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
                   )}
                 </div>
 
-                {/* ДЕТАЛИ ПОЕЗДКИ */}
+                {/* ДЕТАЛИ ПОЕЗДКИ И РАСПИСАНИЕ */}
                 <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-5 space-y-6">
                   <HoldTimer 
                     initialMinutes={10} 
@@ -483,13 +538,14 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
                       ) : (
                         <>
                           <AlertTriangle className="w-3.5 h-3.5" />
-                          <span>На этот выезд мест нет</span>
+                          <span>На этот рейс мест нет</span>
                         </>
                       )}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Выбор даты с фильтрацией по дням недели */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 block">
                         {t('modal.tour_date', 'Дата экскурсии (активны дни проведения)')} *
@@ -510,6 +566,7 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
                       />
                     </div>
 
+                    {/* Выбор конкретного времени выезда */}
                     <div className="space-y-1.5">
                       <label className="text-xs font-bold text-slate-700 block">
                         Время выезда трансфера *
@@ -534,7 +591,7 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
                     </div>
                   </div>
 
-                  {/* Гости */}
+                  {/* Количество гостей с контролем емкости слота */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-200/60">
                     <div className="bg-white p-3.5 border border-slate-200/60 rounded-xl flex items-center justify-between">
                       <div>
@@ -613,7 +670,7 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
                     </div>
                   </div>
 
-                  {/* Опции */}
+                  {/* Дополнительные опции */}
                   {tour.options && tour.options.length > 0 && (
                     <div className="space-y-2 pt-2 border-t border-slate-200/60">
                       <span className="text-xs font-bold text-slate-700 block">
@@ -704,7 +761,7 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
                     </div>
                   </div>
 
-                  {/* Пояснение о подтверждении личности */}
+                  {/* Пояснение о связи */}
                   <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-start gap-3">
                     <PhoneCall className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
                     <p className="text-xs font-semibold text-amber-950 leading-relaxed">
@@ -806,7 +863,7 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
                 </div>
               </div>
 
-              {/* Подвал */}
+              {/* Подвал с кнопкой оформления */}
               <div className="p-5 sm:p-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-auto">
                 <div>
                   <span className="text-[11px] text-slate-400 block font-medium">
@@ -845,7 +902,7 @@ export const TourModal: React.FC<TourModalProps> = ({ tour, onClose, onBookingSu
               </div>
             </form>
           ) : (
-            /* Экран успеха */
+            /* Экран подтверждения */
             <div className="p-8 text-center space-y-6 my-auto">
               <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner">
                 <CheckCircle2 className="w-10 h-10" />

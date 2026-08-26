@@ -14,35 +14,30 @@ interface Scene {
   hasCta?: boolean;
 }
 
-// Отборные фотографии высокого разрешения (2K / 2560px, качество 90+)
 const SCENES: Scene[] = [
   {
-    // Вид на лазурное побережье Красного моря и яхту сверху
-    src: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=2560&q=90',
+    src: '/hero/1.webp',
     eyebrow: 'РЕЙС SSH · 27.9158° N 34.3300° E',
     title: 'Sharm & Adam Tours: ',
     highlight: 'ваш путь к приключениям',
     text: 'От первого шага на трапе самолёта до последнего заката над морем — мы собираем маршруты, которые запоминаются.'
   },
   {
-    // Великие пирамиды Гизы в золотых лучах заката
-    src: 'https://images.unsplash.com/photo-1539650116574-8efeb43e2750?auto=format&fit=crop&w=2560&q=90',
+    src: '/hero/2.webp',
     eyebrow: 'ГИЗА · ДРЕВНИЙ ЕГИПЕТ',
     title: 'Величие ',
     highlight: 'древних пирамид',
-    text: 'Экскурсии с лицензированным египтологом — к плато Гиза, Сфинксу и гробницам, о которых не расскажет ни один путеводитель.'
+    text: 'Экскурсии с лицензированным египтологом — к плато Гиза, Сфинксу и залам Каирского музея без очередей и спешки.'
   },
   {
-    // Золотые дюны Синайской пустыни
-    src: 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=2560&q=90',
+    src: '/hero/3.webp',
     eyebrow: 'ПУСТЫНЯ · СИНАЙ',
     title: 'Сафари в пустыне и ',
     highlight: 'драйв на квадроциклах',
     text: 'Джип-сафари по дюнам на закате, чай в бедуинской деревне и восточное шоу под звёздным небом.'
   },
   {
-    // Премиальный курортный залив и коралловые рифы Рас-Мохаммед
-    src: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=2560&q=90',
+    src: '/hero/4.webp',
     eyebrow: 'КРАСНОЕ МОРЕ · ШАРМ-ЭЛЬ-ШЕЙХ',
     title: 'Роскошный отдых на ',
     highlight: 'побережье 5★',
@@ -76,7 +71,6 @@ export const ScrollytellingHero: React.FC<{ onBookClick?: () => void }> = ({ onB
   const [loadProgress, setLoadProgress] = useState(0);
   const imagesMapRef = useRef<{ [key: string]: HTMLImageElement }>({});
 
-  // 1. Предзагрузка фотографий высокого разрешения
   useEffect(() => {
     let loaded = 0;
 
@@ -88,7 +82,7 @@ export const ScrollytellingHero: React.FC<{ onBookClick?: () => void }> = ({ onB
         const pct = Math.round((loaded / SCENES.length) * 100);
         setLoadProgress(pct);
         if (loaded === SCENES.length) {
-          setTimeout(() => setIsLoading(false), 200);
+          setTimeout(() => setIsLoading(false), 150);
         }
       };
       img.onerror = () => {
@@ -103,7 +97,6 @@ export const ScrollytellingHero: React.FC<{ onBookClick?: () => void }> = ({ onB
     });
   }, []);
 
-  // 2. Инициализация Canvas и быстрой скролл-анимации
   useEffect(() => {
     if (isLoading) return;
 
@@ -157,8 +150,9 @@ export const ScrollytellingHero: React.FC<{ onBookClick?: () => void }> = ({ onB
       const zW = drawW * zoom;
       const zH = drawH * zoom;
 
-      const offsetX = (cw - zW) / 2 + panExtra * 35;
-      const offsetY = (ch - zH) / 2 - panExtra * 20;
+      // Лёгкий панорамный сдвиг с сохранением фокуса на правой трети
+      const offsetX = (cw - zW) / 2 + panExtra * 25;
+      const offsetY = (ch - zH) / 2 - panExtra * 15;
 
       ctx.globalAlpha = alpha;
       ctx.drawImage(img, offsetX, offsetY, zW, zH);
@@ -181,7 +175,7 @@ export const ScrollytellingHero: React.FC<{ onBookClick?: () => void }> = ({ onB
       const img = imagesMapRef.current[scene.src];
       if (!img) return;
 
-      const zoomExtra = frame.t * 0.32;
+      const zoomExtra = frame.t * 0.28;
       const panExtra = frame.t - 0.5;
 
       drawCover(img, 1, zoomExtra, panExtra);
@@ -248,7 +242,7 @@ export const ScrollytellingHero: React.FC<{ onBookClick?: () => void }> = ({ onB
       trigger: containerRef.current,
       start: 'top top',
       end: 'bottom bottom',
-      scrub: 0.15, // Быстрый и отзывчивый скролл без задержек
+      scrub: 0.15,
       onUpdate: (self) => {
         renderFrame(self.progress);
         updateChapters(self.progress);
@@ -302,50 +296,58 @@ export const ScrollytellingHero: React.FC<{ onBookClick?: () => void }> = ({ onB
         </div>
       </div>
 
-      {/* SCROLL-STAGE (Высота уменьшена до 220vh для быстрого скролла) */}
+      {/* SCROLL-STAGE */}
       <div ref={containerRef} className="relative h-[220vh] bg-[#07111e]">
         <div className="sticky top-0 left-0 w-screen h-screen overflow-hidden bg-[#07111e]">
           
           <canvas ref={canvasRef} className="absolute inset-0 w-full h-full block" />
 
-          {/* Виньетка и затемнение */}
-          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-[#07111e] via-[#07111e]/30 to-[#07111e]/70" />
+          {/* Боковое и фоновое затемнение под левый блок с текстом */}
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-r from-[#07111e]/90 via-[#07111e]/40 to-transparent" />
+          <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-[#07111e] via-transparent to-[#07111e]/60" />
 
-          {/* Текстовые оверлеи глав */}
-          <div className="absolute inset-0 flex items-center px-6 sm:px-12 md:px-24 pointer-events-none">
+          {/* Текстовые оверлеи в виде карточек */}
+          <div className="absolute inset-0 flex items-center px-4 sm:px-10 md:px-20 pointer-events-none">
             {SCENES.map((scene, i) => (
               <div
                 key={i}
                 ref={(el) => {
                   chaptersRef.current[i] = el;
                 }}
-                className="absolute max-w-2xl opacity-0 transition-transform duration-150 will-change-transform"
+                className="absolute max-w-xl opacity-0 transition-transform duration-150 will-change-transform"
               >
-                <div className="inline-flex items-center gap-2 font-mono text-xs text-[#f5d77f] border border-[#d4af37]/30 px-3 py-1.5 rounded-full bg-[#07111e]/70 backdrop-blur-md mb-6">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] shadow-[0_0_6px_#d4af37]" />
-                  {scene.eyebrow}
+                {/* Стеклянная плашка с золотым акцентом */}
+                <div className="bg-[#07111e]/85 backdrop-blur-2xl p-6 sm:p-9 rounded-3xl border border-[#d4af37]/40 shadow-2xl shadow-black/90 space-y-4">
+                  
+                  <div className="inline-flex items-center gap-2 font-mono text-[11px] text-[#f5d77f] border border-[#d4af37]/40 px-3 py-1.5 rounded-full bg-[#040b14]/80 shadow-inner">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#d4af37] shadow-[0_0_6px_#d4af37]" />
+                    <span>{scene.eyebrow}</span>
+                  </div>
+
+                  <h2 className="text-2xl sm:text-4xl md:text-5xl font-black text-white leading-[1.2]">
+                    {scene.title}
+                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f5d77f] via-[#d4af37] to-[#aa7c11]">
+                      {scene.highlight}
+                    </span>
+                  </h2>
+
+                  <p className="text-slate-200 text-xs sm:text-base leading-relaxed">
+                    {scene.text}
+                  </p>
+
+                  {scene.hasCta && (
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={onBookClick}
+                        className="pointer-events-auto inline-flex items-center gap-2.5 px-7 py-3.5 bg-gradient-to-r from-[#e5c158] via-[#d4af37] to-[#aa7c11] text-[#07111e] font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl hover:shadow-[#d4af37]/30 hover:scale-105 active:scale-95 cursor-pointer"
+                      >
+                        <span>Забронировать тур</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
-
-                <h2 className="text-3xl sm:text-5xl md:text-6xl font-black text-white leading-[1.15] mb-6 drop-shadow-2xl">
-                  {scene.title}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#f5d77f] via-[#d4af37] to-[#aa7c11]">
-                    {scene.highlight}
-                  </span>
-                </h2>
-
-                <p className="text-slate-200 text-sm sm:text-lg leading-relaxed max-w-lg mb-8 drop-shadow-md">
-                  {scene.text}
-                </p>
-
-                {scene.hasCta && (
-                  <button
-                    onClick={onBookClick}
-                    className="pointer-events-auto inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-[#e5c158] via-[#d4af37] to-[#aa7c11] text-[#07111e] font-bold text-sm tracking-wider uppercase rounded-xl transition-all shadow-xl hover:shadow-[#d4af37]/30 hover:scale-105 active:scale-95 cursor-pointer"
-                  >
-                    Забронировать тур
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                )}
               </div>
             ))}
           </div>
